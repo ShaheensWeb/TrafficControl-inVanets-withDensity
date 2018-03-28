@@ -177,7 +177,7 @@ if(run==true){
         car.y = 378;
         car.d = "w";
       }
-      else{
+      else {
         car.x = 786;
         car.y = h+25;
         car.d = "n";
@@ -214,30 +214,6 @@ if(run==true){
     road.x = ((w/2)-40), road.y = 0, road.width = 80, road.height = h;
     roads.push(road);
     
-    //road3
-    var road = new drawroad();
-    road.x = 0, road.y = 200, road.width = w, road.height = 40;
-    roads.push(road);
-    
-    //road4
-    var road = new drawroad();
-    road.x = 1050, road.y = ((h/2)-40), road.width = 40, road.height = (h - ((h/2)-40));
-    roads.push(road);
-    
-    //road5
-    var road = new drawroad();
-    road.x = 450, road.y = 200, road.width = 40, road.height = h - 200;
-    roads.push(road);
-    
-    //road6
-    var road = new drawroad();
-    road.x = 120, road.y = 0, road.width = 80, road.height = h;
-    roads.push(road);
-    
-    //road7
-    var road = new drawroad();
-    road.x = 0, road.y = ((h/2)+240), road.width = w, road.height = 40;
-    roads.push(road);
     
     intersections();
   }
@@ -574,11 +550,11 @@ if(run==true){
   function drive_cars(){
     for(var i=0;i<cars.length;i++){
       var c = cars[i];
-      c.s = 5;
-      if(c.d == "e"){
+      c.s = 5; // GLOBAL set car speed
+      if(c.d == "e"){ // IF CAR IS GOING EAST
         for(var l=0;l<cars.length;l++){
           var c2 = cars[l];
-          var dc = distance_check(c,c2,"x");
+          var dc = distance_check(c,c2,"x"); // Check if car overlap
           if(dc == true){
             c.s = 0;
             for(var k=0;k<intersections_arr.length;k++){
@@ -614,7 +590,7 @@ if(run==true){
               }
             }
           }
-          else{
+          else{ // If no car overlap
             var counter = 0;
             for(var k=0;k<intersections_arr.length;k++){
               var inter = intersections_arr[k];
