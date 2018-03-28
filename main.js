@@ -550,7 +550,7 @@ if(run==true){
   function drive_cars(){
     for(var i=0;i<cars.length;i++){
       var c = cars[i];
-      c.s = 2; // GLOBAL set car speed
+      c.s = 5; // GLOBAL set car speed
       if(c.d == "e"){ // IF CAR IS GOING EAST
         for(var l=0;l<cars.length;l++){
           var c2 = cars[l];
@@ -616,10 +616,9 @@ if(run==true){
         }
         if(c.x+26 >= canvas.width){
           //reposition car
-          c.x = -25;
-          c.y = 444;
-          c.x = -25;
-          c.d = "e";
+          c.x = w+25;
+          c.y = 385;
+          c.d = "w";
           c.y -= c.s;
         }
         c.x += c.s;
@@ -689,9 +688,9 @@ if(run==true){
         }
         if(c.y+26 <= 0){
           //reposition car
-          c.x = 786;
-          c.y = h+25;
-          c.d = "n";
+          c.x = 746;
+          c.y = -25;
+          c.d = "s";
           c.y -= c.s;
         }
         c.y -= c.s;
@@ -761,9 +760,9 @@ if(run==true){
           }
           if(c.y-26 >= h){
             //reposition car
-            c.y = 368;
-            c.x = w+25;
-            c.d = "w";
+            c.y = h+25;
+            c.x = 786;
+            c.d = "n";
             c.y += c.s;
           }
           c.y += c.s;
