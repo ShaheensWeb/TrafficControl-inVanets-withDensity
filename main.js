@@ -348,7 +348,7 @@ if(run==true){
       }
         }
   
-  function gen_dir(c, inter){
+  function gen_dir(c, inter){  // Turns the cars
     if(c.dd == false){
       var rand_dir = Math.random()*10;
       var dir = c.d;
@@ -550,7 +550,7 @@ if(run==true){
   function drive_cars(){
     for(var i=0;i<cars.length;i++){
       var c = cars[i];
-      c.s = 5; // GLOBAL set car speed
+      c.s = 2; // GLOBAL set car speed
       if(c.d == "e"){ // IF CAR IS GOING EAST
         for(var l=0;l<cars.length;l++){
           var c2 = cars[l];
@@ -604,7 +604,7 @@ if(run==true){
                   //green
                   c.s = 5;
                   //figure dir
-                  gen_dir(c, inter);
+                  // gen_dir(c, inter);
                 }
               }
             }
@@ -677,7 +677,7 @@ if(run==true){
                   //green
                   c.s = 5;
                   //figure dir
-                  gen_dir(c, inter);
+                  // gen_dir(c, inter);
                 }
               }
             }
@@ -749,7 +749,7 @@ if(run==true){
                     //green
                     c.s = 5;
                     //figure dir
-                    gen_dir(c, inter);
+                    // gen_dir(c, inter);
                   }
                 }
               }
@@ -821,7 +821,7 @@ if(run==true){
                     //green
                     c.s = 5;
                     //figure dir
-                    gen_dir(c, inter);
+                    // gen_dir(c, inter);
                   }
                 }
               }
