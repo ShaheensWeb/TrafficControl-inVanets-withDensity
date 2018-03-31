@@ -309,9 +309,10 @@ if (run == true) {
       car.color = COLORS[colorIndex];
       if (carsInDirection[index + 1]) {
         counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
-        tail = carsInDirection[index+1][coordinate];
+        tail = carsInDirection[index + 1][coordinate];
       };
     });
+    if (tail) { tails.push(tail); } // Push the last tail
 
     //TODO:: Sean/jacob validate this code, not sure if it does the things it says it does
     return tails;
@@ -637,7 +638,6 @@ if (run == true) {
     let tailsW = platoonCarsByLength(80, cars, "w");
     let tailsN = platoonCarsByLength(80, cars, "n");
     let tailsS = platoonCarsByLength(80, cars, "s");
-
 
     // Dont delete below, it counts cars from the intersection. Might need this logic
     // cars
