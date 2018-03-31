@@ -9,9 +9,19 @@ window.requestAnimFrame = (function () {
     };
 })();
 
+
+// GLOBAL VARIABLES
 var car_no = 36;
 var canvas = document.getElementsByTagName("canvas")[0];
 var ctx = canvas.getContext("2d");
+const COLORS = {
+  0: "#fff",
+  1: "#E22322",
+  2: "#F9D111",
+  3: "#367C94",
+  4: "#222",
+}
+//END GLOBAL VARIABLES
 
 var BrowserDetect = {
   init: function () {
@@ -223,7 +233,6 @@ if (run == true) {
     road.x = ((w / 2) - 40), road.y = 0, road.width = 80, road.height = h;
     roads.push(road);
 
-
     intersections();
   }
 
@@ -246,6 +255,63 @@ if (run == true) {
 
   function left_greenc() {
     left_green = !left_green;
+  }
+
+  /** 
+   * @param {number} length the length of the platoon
+   * @param cars the list of cars to change the colors of
+   * @param {string} direction the direction of the cars to platoon
+   * @description Updates the colors of the cars based on the platoons, and returns coords of the heads of platoons
+   * @returns {number[]} coordinates of the heads of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
+  */
+  function platoonCarsByLength(length, cars, direction) {
+    let coordinate;
+    switch (direction) {
+      case "w":
+        coordinate = "x"
+        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
+        break;
+      case "e":
+        coordinate = "x"
+        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
+        break;
+      case "n":
+        coordinate = "y"
+        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
+        break;
+      case "s":
+        coordinate = "y"
+        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
+        break;
+      default:
+        throw "direction not supported";
+        break;
+    }
+    // Filter out the cars to the direction that we want
+    let carsInDirection = cars
+      .filter((car) => {
+        return car.d === direction
+      });
+
+    // Color in the platoons
+    let platoonColor = 0;
+    let counter = 0;
+    let colorIndex = 0;
+
+    carsInDirection.forEach((car, index) => {
+      car.color = COLORS[colorIndex];
+      if (carsInDirection[index + 1]) {
+        counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
+      };
+      if (counter > length) {
+        const numColors = Object.keys(COLORS).length;
+        colorIndex = (colorIndex + 1) % numColors
+        counter = 0;
+      }
+    });
+
+    //TODO:: Return the heads of the platoons
+    return [];
   }
 
   function distance_check(c1, c2, axis) {
@@ -563,30 +629,51 @@ if (run == true) {
     // Platoon the cars
     // Check when the last car of the platoon passed the intersection
     // call left_greenc();
-    let platoonSize = 20;
 
-    let colors = {
-      "1": "#E22322",
-      "2": "#F9D111",
-      "3": "#367C94",
-      "4": "#222",
-    }
+    platoonCarsByLength(80, cars, "e");
+    platoonCarsByLength(80, cars, "w");
+    platoonCarsByLength(80, cars, "n");
+    platoonCarsByLength(80, cars, "s");
 
-    if (cars[cars.length - 1]) {
-      car1 = cars[cars.length - 1];
-      car1.color = colors["1"];
-      cars.forEach((car, index) => {
-        if (car !== car1) {
-          let distance = Math.abs(car.x - car1.x);
-          if (distance < 100) {
-            car.color = colors["3"];
-          } else { 
-            car.color = colors["2"];
-          }
-        }
-      });
-    }
+    // Dont delete below, it counts cars from the intersection. Might need this logic
+    // cars
+    //   .filter((car) => {
+    //     return car.d === "e"
+    //   })
+    //   .forEach((car, index) => {
+    //     if (index % platoonSize === 0) {
+    //       car.color = colors[1];
+    //     } else {
+    //       car.color = colors[0];
+    //     }
+    //   });
 
+
+    // cars.sort((car1, car2) => { return Math.abs(h / 2 - car1.y) - Math.abs(h / 2 - car2.y) });
+    // cars
+    //   .filter((car) => {
+    //     return car.d === "n"
+    //   })
+    //   .forEach((car, index) => {
+    //     if (index % platoonSize === 0) {
+    //       car.color = colors[1];
+    //     } else {
+    //       car.color = colors[0];
+    //     }
+    //   });
+    // cars
+    //   .filter((car) => {
+    //     return car.d === "s"
+    //   })
+    //   .forEach((car, index) => {
+    //     if (index % platoonSize === 0) {
+    //       car.color = colors[1];
+    //     } else {
+    //       car.color = colors[0];
+    //     }
+    //   });
+
+    // cars.sort((car1, car2) => { return car1.y - car.y });
 
 
     // cars.forEach((car1, index1) => {
