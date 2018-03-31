@@ -261,8 +261,8 @@ if (run == true) {
    * @param {number} length the length of the platoon
    * @param cars the list of cars to change the colors of
    * @param {string} direction the direction of the cars to platoon
-   * @description Updates the colors of the cars based on the platoons, and returns coords of the heads of platoons
-   * @returns {number[]} coordinates of the heads of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
+   * @description Updates the colors of the cars based on the platoons, and returns coords of the tails of platoons
+   * @returns {number[]} coordinates of the tails of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
   */
   function platoonCarsByLength(length, cars, direction) {
     let coordinate;
@@ -297,21 +297,24 @@ if (run == true) {
     let platoonColor = 0;
     let counter = 0;
     let colorIndex = 0;
-
+    let tail;
+    let tails = [];
     carsInDirection.forEach((car, index) => {
-      car.color = COLORS[colorIndex];
-      if (carsInDirection[index + 1]) {
-        counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
-      };
       if (counter > length) {
+        tails.push(tail);
         const numColors = Object.keys(COLORS).length;
         colorIndex = (colorIndex + 1) % numColors
         counter = 0;
       }
+      car.color = COLORS[colorIndex];
+      if (carsInDirection[index + 1]) {
+        counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
+        tail = carsInDirection[index+1][coordinate];
+      };
     });
 
-    //TODO:: Return the heads of the platoons
-    return [];
+    //TODO:: Sean/jacob validate this code, not sure if it does the things it says it does
+    return tails;
   }
 
   function distance_check(c1, c2, axis) {
@@ -630,10 +633,11 @@ if (run == true) {
     // Check when the last car of the platoon passed the intersection
     // call left_greenc();
 
-    platoonCarsByLength(80, cars, "e");
-    platoonCarsByLength(80, cars, "w");
-    platoonCarsByLength(80, cars, "n");
-    platoonCarsByLength(80, cars, "s");
+    let tailsE = platoonCarsByLength(80, cars, "e");
+    let tailsW = platoonCarsByLength(80, cars, "w");
+    let tailsN = platoonCarsByLength(80, cars, "n");
+    let tailsS = platoonCarsByLength(80, cars, "s");
+
 
     // Dont delete below, it counts cars from the intersection. Might need this logic
     // cars
