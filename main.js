@@ -171,6 +171,7 @@ if (run == true) {
   canvas.width = w;
   canvas.height = h;
   var roads = [], intersections_arr = [], cars = [];
+  var tails_n = [], tails_s = [], tails_e = [], tails_w = [];
 
   function init() {
     //Launch Cars
@@ -250,11 +251,20 @@ if (run == true) {
     drive_cars();
   }
   var left_green = false;
-  console.log(cars);
-  setInterval("left_greenc()", 3000); // Interval for lights
+  setInterval("jobSchedule()", 3000); // Interval for lights
 
   function left_greenc() {
     left_green = !left_green;
+  }
+
+  function jobSchedule() {
+    let ewJobs = tails_e.length + tails_w.length;
+    let swJobs = tails_n.length + tails_s.length;
+    if (ewJobs > swJobs) {
+      left_green = true;
+    } else if (ewJobs < swJobs) {
+      left_green = false;
+    }
   }
 
   /** 
@@ -305,6 +315,7 @@ if (run == true) {
     let colorIndex = 0;
     let tail;
     let tails = [];
+
     carsInDirection.forEach((car, index) => {
       // Front car stopped; split up the cars into platoons
       if (carsInDirection[0].s === 0 && car.s === 0) {
@@ -646,16 +657,10 @@ if (run == true) {
     // Check when the last car of the platoon passed the intersection
     // call left_greenc();
 
-    let tailsE = platoonCarsByLength(80, cars, "e");
-    let tailsW = platoonCarsByLength(80, cars, "w");
-    let tailsN = platoonCarsByLength(80, cars, "n");
-    let tailsS = platoonCarsByLength(80, cars, "s");
-
-    console.log(tailsW);
-
-
-
-    console.log(tailsW);
+    tails_e = platoonCarsByLength(80, cars, "e");
+    tails_w = platoonCarsByLength(80, cars, "w");
+    tails_n = platoonCarsByLength(80, cars, "n");
+    tails_s = platoonCarsByLength(80, cars, "s");
 
     // Dont delete below, it counts cars from the intersection. Might need this logic
     // cars
