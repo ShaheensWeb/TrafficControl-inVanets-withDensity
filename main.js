@@ -262,35 +262,41 @@ if (run == true) {
    * @param cars the list of cars to change the colors of
    * @param {string} direction the direction of the cars to platoon
    * @description Updates the colors of the cars based on the platoons, and returns coords of the tails of platoons
+   *              Platoons cars if the front car is stopped, and the car is before the intersection
    * @returns {number[]} coordinates of the tails of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
   */
   function platoonCarsByLength(length, cars, direction) {
     let coordinate;
     switch (direction) {
       case "w":
-        coordinate = "x"
+        coordinate = "x";
+        cars = cars.filter((car) => car.x > canvas.width / 2)
         cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
         break;
       case "e":
-        coordinate = "x"
+        coordinate = "x";
+        cars = cars.filter((car) => car.x < canvas.width / 2)
         cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
         break;
       case "n":
-        coordinate = "y"
+        coordinate = "y";
+        cars = cars.filter((car) => car.y > canvas.height / 2)
         cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
         break;
       case "s":
-        coordinate = "y"
+        coordinate = "y";
+        cars = cars.filter((car) => car.y < canvas.height / 2)
         cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
         break;
       default:
         throw "direction not supported";
         break;
     }
+
     // Filter out the cars to the direction that we want
     let carsInDirection = cars
       .filter((car) => {
-        return car.d === direction
+        return car.d === direction;
       });
 
     // Color in the platoons
@@ -300,17 +306,23 @@ if (run == true) {
     let tail;
     let tails = [];
     carsInDirection.forEach((car, index) => {
-      if (counter > length) {
-        tails.push(tail);
-        const numColors = Object.keys(COLORS).length;
-        colorIndex = (colorIndex + 1) % numColors
-        counter = 0;
+      // Front car stopped; split up the cars into platoons
+      if (carsInDirection[0].s === 0 && car.s === 0) {
+        if (counter > length) {
+          tails.push(tail);
+          const numColors = Object.keys(COLORS).length;
+          colorIndex = (colorIndex + 1) % numColors
+          counter = 0;
+        }
+        car.color = COLORS[colorIndex];
+        if (carsInDirection[index + 1]) {
+          counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
+          tail = carsInDirection[index][coordinate];
+        };
       }
-      car.color = COLORS[colorIndex];
-      if (carsInDirection[index + 1]) {
-        counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
-        tail = carsInDirection[index + 1][coordinate];
-      };
+      else {
+        car.color = "#00ff00";
+      }
     });
     if (tail) { tails.push(tail); } // Push the last tail
 
@@ -380,14 +392,14 @@ if (run == true) {
     }
     else if (axis == "-x") {
       if (inter.height > 40) {
-        if ((c.x - inter.x) > (c.l + 8) && (c.x - inter.x) <= (c.l + inter.width + 5)) {
+        if ((c.x - inter.x) > (c.l + 10) && (c.x - inter.x) <= (c.l + inter.width - 10)) {
           if (c.y - 80 <= inter.y && c.y + 42 >= inter.y) {
             return true;
           }
         }
       }
       else {
-        if ((c.x - inter.x) > (c.l + 8) && (c.x - inter.x) <= (c.l + inter.width + 5)) {
+        if ((c.x - inter.x) > (c.l + 10) && (c.x - inter.x) <= (c.l + inter.width - 10)) {
           if (c.y - 40 <= inter.y && c.y + 42 >= inter.y) {
             return true;
           }
@@ -638,6 +650,12 @@ if (run == true) {
     let tailsW = platoonCarsByLength(80, cars, "w");
     let tailsN = platoonCarsByLength(80, cars, "n");
     let tailsS = platoonCarsByLength(80, cars, "s");
+
+    console.log(tailsW);
+
+
+
+    console.log(tailsW);
 
     // Dont delete below, it counts cars from the intersection. Might need this logic
     // cars
