@@ -171,7 +171,9 @@ if (run == true) {
   canvas.width = w;
   canvas.height = h;
   var roads = [], intersections_arr = [], cars = [];
-  var tails_n = [], tails_s = [], tails_e = [], tails_w = [];
+  var frameCounter = 0;
+  var carSpeed = 5;
+  var roadWidth = 80;
 
   function init() {
     //Launch Cars
@@ -219,19 +221,18 @@ if (run == true) {
         var color = "#fff";
 
       }
-      console.log(color);
       car.color = color;
       cars.push(car);
     }
 
     //road1
     var road = new drawroad();
-    road.x = 0, road.y = ((h / 2) - 40), road.width = w, road.height = 80;
+    road.x = 0, road.y = ((h / 2) - 40), road.width = w, road.height = roadWidth;
     roads.push(road);
 
     //road2
     var road = new drawroad();
-    road.x = ((w / 2) - 40), road.y = 0, road.width = 80, road.height = h;
+    road.x = ((w / 2) - 40), road.y = 0, road.width = roadWidth, road.height = h;
     roads.push(road);
 
     intersections();
@@ -251,13 +252,14 @@ if (run == true) {
     drive_cars();
   }
   var left_green = false;
-  setInterval("jobSchedule()", 3000); // Interval for lights
+  // setInterval("jobSchedule()", 3000); // Interval for lights //TODO:: Switch light intervals to work by frames
 
   function left_greenc() {
     left_green = !left_green;
   }
 
-  function jobSchedule() {
+  // Switches the lights based on the number of jobs
+  function jobSchedule(tails_e, tails_w, tails_n, tails_s) {
     let ewJobs = tails_e.length + tails_w.length;
     let swJobs = tails_n.length + tails_s.length;
     if (ewJobs > swJobs) {
@@ -464,7 +466,7 @@ if (run == true) {
     var dist = Math.sqrt(distx * distx + disty * disty);
     if (dist > c1.l && dist < range) { // check if distance between cars is in range of neighbor detection
       return 1;
-    }else{
+    } else {
       return 0;
     }
   }
@@ -737,85 +739,35 @@ if (run == true) {
 
   function drive_cars() {
 
-    // OUR CODE GOES HERE USING left_greenc()
-    // Platoon the cars
-    // Check when the last car of the platoon passed the intersection
-    // call left_greenc();
+    let platoonLength = 120;
 
+    tails_e = platoonCarsByLength(platoonLength, cars, "e");
+    tails_w = platoonCarsByLength(platoonLength, cars, "w");
+    tails_n = platoonCarsByLength(platoonLength, cars, "n");
+    tails_s = platoonCarsByLength(platoonLength, cars, "s");
+
+    frameCounter++;
+    // Once enough frames have passed to pass one platoon through, change light if we need to
+    // Platoon length + width of intersection / speed of cars = frames needed for platoon to pass
+    if (frameCounter > (platoonLength + 40) / 5) {
+      frameCounter = 0;
+      jobSchedule(tails_e, tails_w, tails_n, tails_s);
+    }
+
+
+    // Code for debugging NDN
     cars.sort((car1, car2) => { return car2.x - car1.x })
-
     let carsEastward = cars
       .filter((car) => {
         return car.d === "e";
       });
     if (!!carsEastward[0]) {
-      console.log(carsEastward[0].NDN + carsEastward[0].color);
+      // console.log(carsEastward[0].NDN + carsEastward[0].color);
     }
-    tails_e = platoonCarsByLength(80, cars, "e");
-    tails_w = platoonCarsByLength(80, cars, "w");
-    tails_n = platoonCarsByLength(80, cars, "n");
-    tails_s = platoonCarsByLength(80, cars, "s");
 
-    // Dont delete below, it counts cars from the intersection. Might need this logic
-    // cars
-    //   .filter((car) => {
-    //     return car.d === "e"
-    //   })
-    //   .forEach((car, index) => {
-    //     if (index % platoonSize === 0) {
-    //       car.color = colors[1];
-    //     } else {
-    //       car.color = colors[0];
-    //     }
-    //   });
-
-
-    // cars.sort((car1, car2) => { return Math.abs(h / 2 - car1.y) - Math.abs(h / 2 - car2.y) });
-    // cars
-    //   .filter((car) => {
-    //     return car.d === "n"
-    //   })
-    //   .forEach((car, index) => {
-    //     if (index % platoonSize === 0) {
-    //       car.color = colors[1];
-    //     } else {
-    //       car.color = colors[0];
-    //     }
-    //   });
-    // cars
-    //   .filter((car) => {
-    //     return car.d === "s"
-    //   })
-    //   .forEach((car, index) => {
-    //     if (index % platoonSize === 0) {
-    //       car.color = colors[1];
-    //     } else {
-    //       car.color = colors[0];
-    //     }
-    //   });
-
-    // cars.sort((car1, car2) => { return car1.y - car.y });
-
-
-    // cars.forEach((car1, index1) => {
-    //   if (car1.d === 'w') {
-    //     if (index1 % platoonSize === 0) {
-    //       car1.color = colors["2"];
-    //       cars.forEach((car2, index2) => {
-    //         let close = Math.abs(car2.x - car1.x) < 1;
-
-    //         if (car2.d === "w") {
-    //           car2.color = colors["1"];
-    //         }
-    //       });
-    //     }
-    //   }
-    // });
-
-    // OUR CODE ENDS HERE 
     for (var i = 0; i < cars.length; i++) {
       var c = cars[i];
-      c.s = 4; // GLOBAL set car speed
+      c.s = 5; // GLOBAL set car speed
       c.NDN = 0; // reset count of NDN
       if (c.d == "e") { // IF CAR IS GOING EAST
         for (var l = 0; l < cars.length; l++) {
