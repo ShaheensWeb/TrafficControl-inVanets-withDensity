@@ -280,22 +280,96 @@ if (run == true) {
     switch (direction) {
       case "w":
         coordinate = "x";
-        cars = cars.filter((car) => car.x > canvas.width / 2)
+        cars = cars.filter((car) => car.x > canvas.width / 2);
         cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
         break;
       case "e":
         coordinate = "x";
-        cars = cars.filter((car) => car.x < canvas.width / 2)
+        cars = cars.filter((car) => car.x < canvas.width / 2);
         cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
         break;
       case "n":
         coordinate = "y";
-        cars = cars.filter((car) => car.y > canvas.height / 2)
+        cars = cars.filter((car) => car.y > canvas.height / 2);
         cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
         break;
       case "s":
         coordinate = "y";
-        cars = cars.filter((car) => car.y < canvas.height / 2)
+        cars = cars.filter((car) => car.y < canvas.height / 2);
+        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
+        break;
+      default:
+        throw "direction not supported";
+        break;
+    }
+
+    // Filter out the cars to the direction that we want
+    let carsInDirection = cars
+      .filter((car) => {
+        return car.d === direction;
+      });
+
+    // Color in the platoons
+    let platoonColor = 0;
+    let counter = 0;
+    let colorIndex = 0;
+    let tail;
+    let tails = [];
+
+    carsInDirection.forEach((car, index) => {
+      // Front car stopped; split up the cars into platoons
+      if (carsInDirection[0].s === 0 && car.s === 0) {
+        if (counter > length) {
+          tails.push(tail);
+          const numColors = Object.keys(COLORS).length;
+          colorIndex = (colorIndex + 1) % numColors
+          counter = 0;
+        }
+        car.color = COLORS[colorIndex];
+        if (carsInDirection[index + 1]) {
+          counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
+          tail = carsInDirection[index][coordinate];
+        };
+      }
+      else {
+        car.color = "#00ff00";
+      }
+    });
+    if (tail) { tails.push(tail); } // Push the last tail
+
+    //TODO:: Sean/jacob validate this code, not sure if it does the things it says it does
+    return tails;
+  }
+
+  /** 
+ * @param {number} length the length of the platoon
+ * @param cars the list of cars to change the colors of
+ * @param {string} direction the direction of the cars to platoon
+ * @description Updates the colors of the cars based on the platoons, and returns coords of the tails of platoons
+ *              Platoons cars if the front car is stopped, and the car is before the intersection
+ * @returns {number[]} coordinates of the tails of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
+*/
+  function platoonCarsByDensity(length, cars, direction) {
+    let coordinate;
+    switch (direction) {
+      case "w":
+        coordinate = "x";
+        cars = cars.filter((car) => car.x > canvas.width / 2);
+        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
+        break;
+      case "e":
+        coordinate = "x";
+        cars = cars.filter((car) => car.x < canvas.width / 2);
+        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
+        break;
+      case "n":
+        coordinate = "y";
+        cars = cars.filter((car) => car.y > canvas.height / 2);
+        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
+        break;
+      case "s":
+        coordinate = "y";
+        cars = cars.filter((car) => car.y < canvas.height / 2);
         cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
         break;
       default:
@@ -381,6 +455,17 @@ if (run == true) {
           return true;
         }
       }
+    }
+  }
+
+  function neighbor_check(c1, c2, range) {
+    var distx = c2.x - c1.x;
+    var disty = c2.y - c1.y;
+    var dist = Math.sqrt(distx * distx + disty * disty);
+    if (dist > c1.l && dist < range) { // check if distance between cars is in range of neighbor detection
+      return 1;
+    }else{
+      return 0;
     }
   }
 
@@ -657,6 +742,15 @@ if (run == true) {
     // Check when the last car of the platoon passed the intersection
     // call left_greenc();
 
+    cars.sort((car1, car2) => { return car2.x - car1.x })
+
+    let carsEastward = cars
+      .filter((car) => {
+        return car.d === "e";
+      });
+    if (!!carsEastward[0]) {
+      console.log(carsEastward[0].NDN + carsEastward[0].color);
+    }
     tails_e = platoonCarsByLength(80, cars, "e");
     tails_w = platoonCarsByLength(80, cars, "w");
     tails_n = platoonCarsByLength(80, cars, "n");
@@ -722,10 +816,14 @@ if (run == true) {
     for (var i = 0; i < cars.length; i++) {
       var c = cars[i];
       c.s = 4; // GLOBAL set car speed
+      c.NDN = 0; // reset count of NDN
       if (c.d == "e") { // IF CAR IS GOING EAST
         for (var l = 0; l < cars.length; l++) {
           var c2 = cars[l];
           var dc = distance_check(c, c2, "x"); // Check if car overlap
+          if (c2.d === "e") {                    // Check if car is a neighbor travelling in the same direction
+            c.NDN += neighbor_check(c, c2, 150);
+          }
           if (dc == true) {
             c.s = 0;
             for (var k = 0; k < intersections_arr.length; k++) {
@@ -798,6 +896,9 @@ if (run == true) {
         for (var l = 0; l < cars.length; l++) {
           var c2 = cars[l];
           var dc = distance_check(c, c2, "-y");
+          if (c2.d === "n") {                    // Check if car is a neighbor travelling in the same direction
+            c.NDN += neighbor_check(c, c2, 150);
+          }
           if (dc == true) {
             c.s = 0;
             for (var k = 0; k < intersections_arr.length; k++) {
@@ -870,6 +971,9 @@ if (run == true) {
         for (var l = 0; l < cars.length; l++) {
           var c2 = cars[l];
           var dc = distance_check(c, c2, "y");
+          if (c2.d === "s") {                    // Check if car is a neighbor travelling in the same direction
+            c.NDN += neighbor_check(c, c2, 150);
+          }
           if (dc == true) {
             c.s = 0;
             for (var k = 0; k < intersections_arr.length; k++) {
@@ -942,6 +1046,9 @@ if (run == true) {
         for (var l = 0; l < cars.length; l++) {
           var c2 = cars[l];
           var dc = distance_check(c, c2, "-x");
+          if (c2.d === "w") {                    // Check if car is a neighbor travelling in the same direction
+            c.NDN += neighbor_check(c, c2, 150);
+          }
           if (dc == true) {
             c.s = 0;
             for (var k = 0; k < intersections_arr.length; k++) {
@@ -1041,6 +1148,7 @@ if (run == true) {
     this.d = "e";
     this.dd = false;
     this.color = "#F5D600";
+    this.NDN = 0;
 
     this.draw = function () {
       ctx.fillStyle = this.color;
