@@ -21,7 +21,7 @@ const COLORS = {
   3: "#367C94",
   4: "#222",
 }
-const USE_PLATOONING = true;
+const USE_PLATOONING = false;
 //END GLOBAL VARIABLES
 
 var BrowserDetect = {
@@ -173,6 +173,9 @@ if (run == true) {
   canvas.height = h;
   var roads = [], intersections_arr = [], cars = [];
   var frameCounter = 0;
+  var totalJobs = 0;
+  var totalFrames = 0;
+  var totalFrames = 0;
   var carSpeed = 5;
   var roadWidth = 80;
 
@@ -280,80 +283,6 @@ if (run == true) {
    * @returns {number[]} coordinates of the tails of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
   */
   function platoonCarsByLength(length, cars, direction) {
-    let coordinate;
-    switch (direction) {
-      case "w":
-        coordinate = "x";
-        cars = cars.filter((car) => car.x > canvas.width / 2);
-        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
-        break;
-      case "e":
-        coordinate = "x";
-        cars = cars.filter((car) => car.x < canvas.width / 2);
-        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
-        break;
-      case "n":
-        coordinate = "y";
-        cars = cars.filter((car) => car.y > canvas.height / 2);
-        cars.sort((car1, car2) => { return car1[coordinate] - car2[coordinate] });
-        break;
-      case "s":
-        coordinate = "y";
-        cars = cars.filter((car) => car.y < canvas.height / 2);
-        cars.sort((car1, car2) => { return car2[coordinate] - car1[coordinate] });
-        break;
-      default:
-        throw "direction not supported";
-        break;
-    }
-
-    // Filter out the cars to the direction that we want
-    let carsInDirection = cars
-      .filter((car) => {
-        return car.d === direction;
-      });
-
-    // Color in the platoons
-    let platoonColor = 0;
-    let counter = 0;
-    let colorIndex = 0;
-    let tail;
-    let tails = [];
-
-    carsInDirection.forEach((car, index) => {
-      // Front car stopped; split up the cars into platoons
-      if (carsInDirection[0].s === 0 && car.s === 0) {
-        if (counter > length) {
-          tails.push(tail);
-          const numColors = Object.keys(COLORS).length;
-          colorIndex = (colorIndex + 1) % numColors
-          counter = 0;
-        }
-        car.color = COLORS[colorIndex];
-        if (carsInDirection[index + 1]) {
-          counter += Math.abs(carsInDirection[index + 1][coordinate] - car[coordinate]);
-          tail = carsInDirection[index][coordinate];
-        };
-      }
-      else {
-        car.color = "#00ff00";
-      }
-    });
-    if (tail) { tails.push(tail); } // Push the last tail
-
-    //TODO:: Sean/jacob validate this code, not sure if it does the things it says it does
-    return tails;
-  }
-
-  /** 
- * @param {number} length the length of the platoon
- * @param cars the list of cars to change the colors of
- * @param {string} direction the direction of the cars to platoon
- * @description Updates the colors of the cars based on the platoons, and returns coords of the tails of platoons
- *              Platoons cars if the front car is stopped, and the car is before the intersection
- * @returns {number[]} coordinates of the tails of the platoons. Will be y coordinates in the case of "n" or "s", and x otherwise
-*/
-  function platoonCarsByDensity(length, cars, direction) {
     let coordinate;
     switch (direction) {
       case "w":
@@ -747,6 +676,11 @@ if (run == true) {
     tails_w = platoonCarsByLength(platoonLength, cars, "w");
     tails_n = platoonCarsByLength(platoonLength, cars, "n");
     tails_s = platoonCarsByLength(platoonLength, cars, "s");
+
+    totalFrames++;
+    totalJobs += tails_e.length + tails_w.length + tails_s.length + tails_n.length
+    let mean = totalJobs / (totalFrames);
+    console.log(mean);
 
     frameCounter++;
     // Once enough frames have passed to pass one platoon through, change light if we need to
