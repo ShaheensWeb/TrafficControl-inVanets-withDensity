@@ -21,6 +21,7 @@ const COLORS = {
   3: "#367C94",
   4: "#222",
 }
+const USE_PLATOONING = true;
 //END GLOBAL VARIABLES
 
 var BrowserDetect = {
@@ -252,8 +253,9 @@ if (run == true) {
     drive_cars();
   }
   var left_green = false;
-  // setInterval("jobSchedule()", 3000); // Interval for lights //TODO:: Switch light intervals to work by frames
-
+  if (!USE_PLATOONING) {
+    setInterval("left_greenc()", 3000); // Interval for lights //TODO:: Switch light intervals to work by frames
+  }
   function left_greenc() {
     left_green = !left_green;
   }
@@ -749,9 +751,11 @@ if (run == true) {
     frameCounter++;
     // Once enough frames have passed to pass one platoon through, change light if we need to
     // Platoon length + width of intersection / speed of cars = frames needed for platoon to pass
-    if (frameCounter > (platoonLength + 40) / 5) {
+    if (frameCounter > (platoonLength + 40) / 2) {
       frameCounter = 0;
-      jobSchedule(tails_e, tails_w, tails_n, tails_s);
+      if (USE_PLATOONING) {
+        jobSchedule(tails_e, tails_w, tails_n, tails_s);
+      }
     }
 
 
@@ -767,7 +771,7 @@ if (run == true) {
 
     for (var i = 0; i < cars.length; i++) {
       var c = cars[i];
-      c.s = 5; // GLOBAL set car speed
+      c.s = 2; // GLOBAL set car speed
       c.NDN = 0; // reset count of NDN
       if (c.d == "e") { // IF CAR IS GOING EAST
         for (var l = 0; l < cars.length; l++) {
@@ -823,7 +827,7 @@ if (run == true) {
                 }
                 else {
                   //green
-                  c.s = 5;
+                  c.s = 2;
                   //figure dir
                   // gen_dir(c, inter);
                 }
@@ -898,7 +902,7 @@ if (run == true) {
                 }
                 else {
                   //green
-                  c.s = 5;
+                  c.s = 2;
                   //figure dir
                   // gen_dir(c, inter);
                 }
@@ -973,7 +977,7 @@ if (run == true) {
                 }
                 else {
                   //green
-                  c.s = 5;
+                  c.s = 2;
                   //figure dir
                   // gen_dir(c, inter);
                 }
@@ -1048,7 +1052,7 @@ if (run == true) {
                 }
                 else {
                   //green
-                  c.s = 5;
+                  c.s = 2;
                   //figure dir
                   // gen_dir(c, inter);
                 }
